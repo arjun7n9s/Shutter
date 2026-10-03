@@ -1,0 +1,23 @@
+{
+  "name": "parda",
+  "private": true,
+  "description": "On-device visual perception and PII redaction for lightweight browser agents (SIH26171).",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/*",
+    "extension",
+    "bench"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

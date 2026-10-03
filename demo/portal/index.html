@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>National Scholarship Portal</title>
+<style>
+  body { margin: 0; min-width: 1040px; font: 15px/1.45 "Segoe UI", sans-serif; background: #f4f0e6; color: #1b2430; }
+  header { background: #0a2f6b; color: #fff; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 0 -4px 0 #e36f1e; }
+  header b { font-size: 18px; }
+  nav a { color: #d6e2ff; margin-left: 16px; text-decoration: none; }
+  main { max-width: 1040px; margin: 24px auto; background: #fff; border: 1px solid #d5dde8; border-radius: 8px; padding: 24px 28px 32px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .muted { color: #5c6b7a; }
+  form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; margin-top: 18px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #3d4c5c; }
+  input { font: inherit; padding: 8px 10px; border: 1px solid #b7c3d1; border-radius: 4px; }
+  .span { grid-column: 1 / -1; }
+  .row { display: flex; gap: 10px; margin-top: 8px; }
+  button { font: inherit; background: #0b3d91; color: #fff; border: 0; border-radius: 4px; padding: 10px 16px; cursor: pointer; }
+  button.alt { background: #e8edf4; color: #1b2430; }
+  canvas { border: 1px solid #d5dde8; border-radius: 8px; background: #fff; }
+  .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: start; }
+  #done { display: none; margin-top: 16px; padding: 12px 14px; background: #e8f6ee; border: 1px solid #1f7a4d; color: #145c38; border-radius: 6px; }
+  #done.show { display: block; }
+  .copy { margin-top: 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <b>National Scholarship Portal</b>
+  <nav>
+    <a href="#copy" id="copy-task">Copy Shutter task</a>
+    <a href="#home">Home</a><a href="#status">Track status</a><a href="#help">Help</a>
+  </nav>
+</header>
+<main>
+  <div class="split">
+    <section>
+      <h1>Post-matric scholarship</h1>
+      <p class="muted">Application NSP-2026-00481 · Draft saved today</p>
+      <form id="app">
+        <label>Applicant name<input name="name" autocomplete="name" data-gt="PERSON"></label>
+        <label>Date of birth<input name="bday" autocomplete="bday" data-gt="DOB"></label>
+        <label>Aadhaar<input name="aadhaar" inputmode="numeric" data-gt="AADHAAR"></label>
+        <label>Mobile<input name="mobile" type="tel" autocomplete="tel" data-gt="PHONE"></label>
+        <label>Email<input name="email" type="email" autocomplete="email" data-gt="EMAIL"></label>
+        <label>PAN<input name="pan" data-gt="PAN"></label>
+        <label class="span">Address<input name="address" autocomplete="street-address" data-gt="ADDRESS"></label>
+        <label>IFSC<input name="ifsc" data-gt="IFSC"></label>
+        <label>Account number<input name="account" data-gt="BANK_ACCOUNT"></label>
+        <div class="span row">
+          <button type="submit" id="submit">Submit application</button>
+          <button type="button" class="alt">Save draft</button>
+        </div>
+      </form>
+      <div id="done"></div>
+    </section>
+    <section>
+      <h1>Uploaded identity card</h1>
+      <p class="muted">Preview of the identity card on file.</p>
+      <canvas id="card" width="520" height="300"></canvas>
+    </section>
+  </div>
+</main>
+<script>
+const TASK = "The post-matric scholarship form is already filled. Submit the application. Do not ask for any personal values.";
+document.getElementById("copy-task").onclick = async (e) => {
+  e.preventDefault();
+  await navigator.clipboard.writeText(TASK);
+  document.getElementById("copy-task").textContent = "Copied to clipboard";
+};
+const form = document.getElementById("app");
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(form).entries());
+  const box = document.getElementById("done");
+  box.textContent = "Submitted for " + (d.name || "(no name)") + " · Aadhaar " + (d.aadhaar || "missing");
+  box.classList.add("show");
+  box.dataset.status = "ok";
+  box.dataset.name = d.name || "";
+  box.dataset.aadhaar = d.aadhaar || "";
+});
+const c = document.getElementById("card"), g = c.getContext("2d");
+g.fillStyle = "#fffdf6"; g.fillRect(0, 0, 520, 300);
+g.fillStyle = "#0b3d91"; g.fillRect(0, 0, 520, 42);
+g.fillStyle = "#fff"; g.font = "bold 16px Segoe UI"; g.fillText("Government of India", 16, 27);
+g.fillStyle = "#d9e2ef"; g.fillRect(18, 62, 96, 120);
+g.fillStyle = "#1b2430"; g.font = "15px Segoe UI";
+g.fillText("Meera Iyer", 132, 84);
+g.fillText("DOB: 14/08/2004", 132, 112);
+g.font = "bold 22px Segoe UI";
+g.fillText("2096 5442 5722", 132, 210);
+g.font = "italic 20px Segoe UI"; g.fillStyle = "#163";
+g.fillText("Meera Iyer", 132, 258);
+const r0 = c.getBoundingClientRect();
+const sx = r0.width / c.width, sy = r0.height / c.height;
+window.__gt = [];
+function box(cls, x, y, w, h) {
+  window.__gt.push({ cls, rect: { x: r0.left + x * sx, y: r0.top + y * sy, w: w * sx, h: h * sy } });
+}
+function line(cls, text, x, baseline, font) {
+  g.font = font;
+  box(cls, x, baseline - 18, g.measureText(text).width, 22);
+}
+box("ID_DOCUMENT", 0, 0, 520, 300);
+box("FACE", 18, 62, 96, 120);
+line("PERSON", "Meera Iyer", 132, 84, "15px Segoe UI");
+g.font = "15px Segoe UI";
+line("DOB", "14/08/2004", 132 + g.measureText("DOB: ").width, 112, "15px Segoe UI");
+line("AADHAAR", "2096 5442 5722", 132, 210, "bold 22px Segoe UI");
+line("SIGNATURE", "Meera Iyer", 132, 258, "italic 20px Segoe UI");
+</script>
+</body>
+</html>

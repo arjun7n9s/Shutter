@@ -1,0 +1,26 @@
+{
+  "name": "@parda/bench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/generate.ts",
+    "run": "tsx src/run.ts",
+    "bench": "tsx src/generate.ts && tsx src/run.ts",
+    "heldout": "tsx src/heldout.ts && tsx src/run.ts heldout",
+    "heldout2": "tsx src/heldout2.ts && tsx src/run.ts heldout2",
+    "demo": "tsx src/demo-e2e.ts",
+    "real": "tsx src/real.ts",
+    "vision-web": "tsx src/vision-web.ts",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@parda/core": "*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright": "1.63.0",
+    "tsx": "^4.20.0",
+    "zxing-wasm": "^3.1.4"
+  }
+}

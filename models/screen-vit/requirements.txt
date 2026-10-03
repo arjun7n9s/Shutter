@@ -1,0 +1,10 @@
+# Fine-tune, quantise and evaluate the screen ViT. The extension does not need these at runtime.
+# RTX 50-series needs a CUDA 12.8+ PyTorch build.
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch
+torchvision
+rfdetr[train,onnxexport]==1.11.1
+pillow
+numpy
+onnx
+onnxruntime

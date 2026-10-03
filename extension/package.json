@@ -1,33 +1,23 @@
 {
-  "name": "veil-extension",
-  "version": "0.1.0",
+  "name": "@parda/extension",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Veil — privacy-preserving browser vision agent (WXT, Chrome MV3 + Firefox MV3)",
   "scripts": {
     "dev": "wxt",
-    "dev:firefox": "wxt -b firefox",
-    "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
-    "build:all": "wxt build && wxt build -b firefox",
-    "zip": "wxt zip && wxt zip -b firefox",
-    "postinstall": "wxt prepare",
-    "compile": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "bench:python": "python ../bench/run_metrics.py"
+    "assets": "node scripts/fetch-assets.mjs",
+    "build": "node scripts/fetch-assets.mjs && wxt build",
+    "zip": "wxt zip",
+    "typecheck": "wxt prepare && tsc --noEmit -p .",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.8.1",
-    "zod": "^3.23.8"
+    "@parda/core": "*",
+    "onnxruntime-web": "^1.23.0",
+    "zxing-wasm": "^3.1.4"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.287",
-    "@types/jsdom": "^30.0.0",
-    "@vitest/coverage-v8": "^2.1.8",
-    "jsdom": "^30.1.1",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "wxt": "^0.19.13"
+    "happy-dom": "^20.0.0",
+    "wxt": "^0.21.4"
   }
 }

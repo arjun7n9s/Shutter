@@ -1,0 +1,46 @@
+# Offline deployment: download weights once with `scripts/fetch_model.sh`, then run with no internet.
+#   MODEL=microsoft/Fara1.5-4B docker compose up
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.19.1
+    command:
+      - --model=/models/${MODEL_DIR:-Fara1.5-4B}
+      - --served-model-name=${MODEL:-microsoft/Fara1.5-4B}
+      - --max-model-len=32768
+      - --limit-mm-per-prompt={"image":3}
+      - --gpu-memory-utilization=0.90
+      - --disable-log-requests
+    environment:
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      VLLM_NO_USAGE_STATS: "1"
+      DO_NOT_TRACK: "1"
+    volumes:
+      - ${MODELS_PATH:-./models}:/models:ro
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks: [internal]
+
+  parda:
+    build: .
+    environment:
+      PARDA_PROVIDER: vllm
+      PARDA_VLLM_URL: http://vllm:8000/v1
+      PARDA_MODEL: ${MODEL:-microsoft/Fara1.5-4B}
+      PARDA_API_KEY: ${PARDA_API_KEY:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on: [vllm]
+    networks: [internal, edge]
+
+networks:
+  # The model container has no route out; only the adapter is reachable, and only from localhost.
+  internal:
+    internal: true
+  edge: {}

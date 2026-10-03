@@ -1,24 +1,33 @@
 node_modules/
-.wxt/
-.output/
 dist/
-*.zip
+.output/
+.wxt/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+
+# python
 __pycache__/
 *.pyc
 .venv/
-.hf-cache/
-.DS_Store
+.pytest_cache/
+.ruff_cache/
 
-# generated browser harnesses (rebuild with make_l3_harness.py / make_l3_recovery_harness.py)
-bench/l3_*.html
-bench/l3rec_*.html
+# models and generated data
+*.onnx
+*.pt
+*.safetensors
+bench/out/
+bench/corpus/generated/
+bench/corpus/heldout/
+models/**/runs/
+models/**/datasets/
 
-# secrets: never commit the configured .env
-.env
-!.env.example
-
-# Extension build output. `extension/out-*/` is the escape hatch wxt.config.ts
-# exposes via VEIL_OUT_DIR, used when .output is locked on Windows — so the
-# pattern is a glob, not a fixed list, or a new build dir gets committed.
-extension/out-*/
-extension/.output/
+.ref/
+*.egg-info/
+extension/public/ort/
+extension/public/zxing/
+extension/public/models/
+bench/corpus/heldout2/
