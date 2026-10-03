@@ -205,6 +205,20 @@ def test_scholarship_walk_follows_centered_main():
         assert abs(a["y"] - 231) < 3
 
 
+def test_cors_echoes_extension_and_loopback_only():
+    ext = "chrome-extension://" + "a" * 32
+    with TestClient(create_app(provider=FakeProvider(), api_key="")) as c:
+        ok = c.options("/v1/step", headers={"Origin": ext, "Access-Control-Request-Method": "POST"})
+        assert ok.status_code == 204
+        assert ok.headers["access-control-allow-origin"] == ext
+        assert ok.headers["access-control-allow-private-network"] == "true"
+        local = c.get("/healthz", headers={"Origin": "http://127.0.0.1:4173"})
+        assert local.headers["access-control-allow-origin"] == "http://127.0.0.1:4173"
+        evil = c.options("/v1/step", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST"})
+        assert "access-control-allow-origin" not in evil.headers
+        assert "access-control-allow-private-network" not in evil.headers
+
+
 def test_auth_required_when_key_set():
     with TestClient(create_app(provider=FakeProvider(), api_key="s3cret")) as c:
         assert c.post("/v1/step", json=req()).status_code == 401

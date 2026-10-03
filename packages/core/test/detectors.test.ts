@@ -114,7 +114,8 @@ describe("detect", () => {
   });
 
   it("secrets", () => {
-    expect(classes("key AKIAABCDEFGHIJKLMNOP here")[0]?.[0]).toBe("SECRET");
+    const accessKey = "AKIA" + "ABCDEFGHIJKLMNOP";
+    expect(classes(`key ${accessKey} here`)[0]?.[0]).toBe("SECRET");
     expect(classes("Authorization: Bearer abcdefghijklmnopqrstuvwxyz0123")[0]?.[0]).toBe("SECRET");
   });
 

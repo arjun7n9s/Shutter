@@ -18,6 +18,31 @@ from .providers import FakeProvider, Provider, VLLMProvider
 from .tripwire import find_leaks
 
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
+_CORS_METHODS = "GET, POST, OPTIONS"
+_CORS_HEADERS = "authorization, content-type"
+
+
+def _cors_origin(origin: str | None) -> str | None:
+    """Echo only the extension and loopback. A wildcard would let any site read this server."""
+    if not origin or any(c in origin for c in "\r\n ,"):
+        return None
+    extra = {part.strip() for part in os.environ.get("PARDA_CORS_ORIGINS", "").split(",") if part.strip()}
+    if origin in extra:
+        return origin
+    if origin.startswith("chrome-extension://"):
+        ext_id = origin.removeprefix("chrome-extension://")
+        if len(ext_id) == 32 and all("a" <= c <= "p" for c in ext_id):
+            return origin
+        return None
+    for host in ("http://127.0.0.1", "http://localhost"):
+        if origin == host:
+            return origin
+        prefix = host + ":"
+        if origin.startswith(prefix) and origin[len(prefix) :].isdigit():
+            port = int(origin[len(prefix) :])
+            if 1 <= port <= 65535:
+                return origin
+    return None
 
 
 def _provider_from_env() -> Provider:
@@ -73,21 +98,24 @@ def create_app(provider: Provider | None = None, api_key: str | None = None) -> 
     async def extension_cors(request, call_next):
         # Chrome treats a side-panel POST to loopback as a private-network request and
         # drops it unless the preflight opts in. The service-worker GET is not preflighted.
+        origin = _cors_origin(request.headers.get("origin"))
         if request.method == "OPTIONS":
             from starlette.responses import Response
 
-            return Response(
-                status_code=204,
-                headers={
-                    "access-control-allow-origin": "*",
-                    "access-control-allow-methods": "GET, POST, OPTIONS",
-                    "access-control-allow-headers": "*",
-                    "access-control-allow-private-network": "true",
-                },
-            )
+            headers = {
+                "access-control-allow-methods": _CORS_METHODS,
+                "access-control-allow-headers": _CORS_HEADERS,
+                "vary": "Origin",
+            }
+            if origin:
+                headers["access-control-allow-origin"] = origin
+                headers["access-control-allow-private-network"] = "true"
+            return Response(status_code=204, headers=headers)
         response = await call_next(request)
-        response.headers["access-control-allow-origin"] = "*"
-        response.headers["access-control-allow-private-network"] = "true"
+        if origin:
+            response.headers["access-control-allow-origin"] = origin
+            response.headers["access-control-allow-private-network"] = "true"
+            response.headers["vary"] = "Origin"
         return response
 
     def auth(authorization: str = Header(default="")) -> None:
