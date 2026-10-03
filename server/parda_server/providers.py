@@ -88,8 +88,9 @@ def _fill_from_slots(req: object, vw: float, vh: float) -> list[str] | None:
         return None
     steps: list[str] = []
     for cls, x, y in fields:
-        steps.append(tool_call(f"Focus the {cls.lower().replace('_', ' ')} field.", action="left_click", coordinate=_fara(x, y, vw, vh)))
-        steps.append(tool_call("Type the placeholder; the browser will substitute the real value.", action="type", text=by_cls[cls]))
+        label = cls.lower().replace("_", " ")
+        steps.append(tool_call(f"Focus the {label} field.", action="left_click", coordinate=_fara(x, y, vw, vh)))
+        steps.append(tool_call("Type the placeholder.", action="type", text=by_cls[cls]))
     instruction = (getattr(req, "instruction", "") or "").lower()
     if any(word in instruction for word in ("submit", "fill", "send", "apply")):
         for role, cls, _empty, x, y in slots:
@@ -116,7 +117,8 @@ def _portal_steps(legend: list, vw: float, vh: float) -> list[str]:
             continue
         text = f"{token} {by_cls['PINCODE']}" if cls == "ADDRESS" and by_cls.get("PINCODE") else token
         x, cy = _portal_xy(vw, ox, y)
-        steps.append(tool_call(f"Focus the {cls.lower().replace('_', ' ')} field.", action="left_click", coordinate=_fara(x, cy, vw, vh)))
+        label = cls.lower().replace("_", " ")
+        steps.append(tool_call(f"Focus the {label} field.", action="left_click", coordinate=_fara(x, cy, vw, vh)))
         steps.append(tool_call("Type the placeholder; the browser will substitute the real value.", action="type", text=text))
     sx, sy = _portal_xy(vw, _PORTAL_SUBMIT[0], _PORTAL_SUBMIT[1])
     steps.append(tool_call("Submit the application.", action="left_click", coordinate=_fara(sx, sy, vw, vh)))

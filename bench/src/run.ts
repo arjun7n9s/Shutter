@@ -10,12 +10,11 @@
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
-import { homedir } from "node:os";
 import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
-import { chromium } from "playwright";
 import type { DrawOp, Rect } from "@parda/core";
+import { launch } from "./browser";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CORPUS_NAME = process.argv[2] ?? "generated";
@@ -149,7 +148,7 @@ async function main(): Promise<void> {
       parda_no_strict: { ops: [] },
     };
     for (const [mode, strict] of [["parda", true], ["parda_no_strict", false]] as const) {
-      const r = (await page.evaluate((s) => (window as any).__parda.parda(s), strict)) as PardaOut;
+      const r = (await page.evaluate((s: boolean) => (window as any).__parda.parda(s), strict)) as PardaOut;
       outs[mode] = { ops: r.ops, det: r };
     }
     const m = (await cdp.send("Performance.getMetrics")) as { metrics: Array<{ name: string; value: number }> };
@@ -219,7 +218,10 @@ async function main(): Promise<void> {
     if (first) writeFileSync(join(OUT, "samples", `${template}_raw.png`), Buffer.from(shot.split(",")[1]!, "base64"));
     for (const mode of first ? (["blanket", "parda"] as const) : (["parda"] as const)) {
       try {
-        const url = (await page.evaluate(([s, o]) => (window as any).__parda.render(s, o), [shot, outs[mode].ops] as const)) as string;
+        const url = (await page.evaluate(
+          ([s, o]: readonly [string, DrawOp[]]) => (window as any).__parda.render(s, o),
+          [shot, outs[mode].ops] as const,
+        )) as string;
         if (first) writeFileSync(join(OUT, "samples", `${template}_${mode}.jpg`), Buffer.from(url.split(",")[1]!, "base64"));
       } catch (e) {
         selfCheckRejects.push(`${file} (${mode}): ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`);
